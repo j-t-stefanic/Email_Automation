@@ -114,3 +114,30 @@ python Optimum_Email_Automation.py --username you@optimum.net --mailbox Archive 
 ```
 
 This command analyzes **one selected mailbox**. It does not recursively scan every folder.
+
+## 4. Apply the rules only after reviewing the preview
+
+Once the rules and preview look right, run:
+
+```shell
+python Optimum_Email_Automation.py --username you@optimum.net apply --rules email_rules.json
+```
+
+The script scans the mailbox **again and creates a fresh plan**. It displays planned counts, then requires you to type `APPLY` exactly. Any other answer makes no changes. It does **not** load or execute `preview.csv`; messages arriving or changing between `analyze` and `apply` may affect the fresh plan. Review the displayed counts before confirming.
+
+For a `move` action, the script attempts to create the destination folder, copies the message there, marks the original for deletion, and expunges marked originals at the end. For a `delete` action, it uses the same process with `Trash` as the default destination. If your account uses a different Trash folder name, specify it:
+
+```shell
+python Optimum_Email_Automation.py --username you@optimum.net apply --trash Deleted
+```
+
+Check the **exact server folder name** in your email client; the script does not discover it automatically. Folder creation is attempted on each move, and a server response of `NO` is treated as though the folder may already exist. If a copy then fails, the script prints an error for that UID.
+
+`--yes` skips the typed `APPLY` confirmation. Use it only in a controlled process after you understand the rules and potential mailbox changes:
+
+```shell
+python Optimum_Email_Automation.py --username you@optimum.net apply --yes
+```
+
+The completion counts show `move`, `delete`, `keep`, `none`, and `errors`. They count operations that returned successfully in the script. **The script does not verify the destination folder after each copy or check the server's expunge response**, so check the mailbox in your email client before treating those counts as a final audit. A failure after copying but before removing the original can leave a duplicate. The script continues past per-message errors and returns exit status `1` when such errors occur; it returns `0` when none were recorded.
+
